@@ -1,6 +1,8 @@
 
 import 'package:flutter/material.dart';
 
+/// AppColors defines the central color palette for the Ashore application.
+/// It maintains a strict Black & White aesthetic.
 class AppColors {
   static const Color primaryRed = Color(0xFFD32F2F); // Vibrant red from logo
   static const Color backgroundBeige = Color(0xFFEFE5DA); // Warm beige background
