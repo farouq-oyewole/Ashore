@@ -9,6 +9,8 @@ import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:ashore/screens/sign_up_page.dart';
 import 'package:ashore/screens/login_page.dart';
 
+/// SplashScreen handles the premium image carousel and brand introduction.
+/// It uses AnimatedSwitcher for seamless B&W image transitions.
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
 
