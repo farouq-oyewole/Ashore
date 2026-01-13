@@ -9,6 +9,10 @@ A premium, world-class modest fashion e-commerce application built with Flutter.
 - **Strict B&W Aesthetic**: A sophisticated black and white design language for a luxury feel.
 - **Responsive Design**: Optimized for both iOS and Android.
 
+## 💎 World-Class Experience
+
+Ashore is designed for users who value elegance and modesty. The interface uses micro-animations and a curated color palette to ensure every interaction feels premium and intentional.
+
 ## 🛠 Tech Stack
 
 - **Flutter & Dart**
