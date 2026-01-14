@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "595459834255",
+    "project_id": "ashore-18e03",
+    "storage_bucket": "ashore-18e03.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595459834255:android:2fc2876b9b7b3a48afcbfa",
+        "android_client_info": {
+          "package_name": "com.example.ashore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaVEuz5vX5Aosw73N_3p0JB2Ir9DyDhs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:595459834255:android:fb82cd7e33e1d1c2afcbfa",
+        "android_client_info": {
+          "package_name": "com.nebla.ashore"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAaVEuz5vX5Aosw73N_3p0JB2Ir9DyDhs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
