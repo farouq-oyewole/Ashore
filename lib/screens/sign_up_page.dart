@@ -1,12 +1,15 @@
-
 // ignore_for_file: deprecated_member_use
 
 import 'package:flutter/material.dart';
 import 'package:glassmorphism_ui/glassmorphism_ui.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:rive/rive.dart' hide LinearGradient;
+import 'package:ashore/core/widgets/moving_gradient_background.dart';
 import 'package:ashore/screens/login_page.dart';
 import 'package:ashore/screens/home_page.dart';
+import 'package:ashore/core/services/auth_service.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -16,216 +19,309 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  final _confirmPasswordController = TextEditingController();
+  final _authService = AuthService();
+
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _handleSignUp() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty || _nameController.text.isEmpty) {
+      _showError('Please fill in all fields');
+      return;
+    }
+
+    if (_passwordController.text != _confirmPasswordController.text) {
+      _showError('Passwords do not match');
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      await _authService.signUpWithEmail(
+        _emailController.text.trim(),
+        _passwordController.text.trim(),
+        displayName: _nameController.text.trim(),
+      );
+      
+      if (mounted) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (_) => const HomePage()),
+        );
+      }
+    } catch (e) {
+      _showError(e.toString());
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  void _showError(String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: Colors.redAccent,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // Background - White/Light Grey Gradient
-          Container(
-            width: double.infinity,
-            height: double.infinity,
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.bottomLeft,
-                end: Alignment.topRight,
-                colors: [
-                  Color(0xFFFFFFFF),
-                  Color(0xFFF5F5F5),
-                  Color(0xFFFFFFFF),
-                ],
-              ),
-            ),
+          const Positioned.fill(
+            child: MovingGradientBackground(),
           ),
           
-          // Background Decoration
-          Positioned(
-            bottom: -100,
-            left: -50,
-            child: Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.black.withOpacity(0.02),
+          const Positioned.fill(
+            child: Opacity(
+              opacity: 0.3,
+              child: RiveAnimation.network(
+                'https://public.rive.app/community/runtime-files/2163-4334-spacer-animation.riv',
+                fit: BoxFit.cover,
               ),
             ),
           ),
 
           SafeArea(
             child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20),
-              child: Column(
-                children: [
-                  const SizedBox(height: 20),
-                  
-                  // Back Button
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: IconButton(
-                      icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
-                      onPressed: () => Navigator.of(context).pop(),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Header
-                  Text(
-                    'CREATE NEW\nACCOUNT',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.playfairDisplay(
-                      fontSize: 32,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                      height: 1.2,
-                    ),
-                  ),
-                  const SizedBox(height: 12),
-                  Text(
-                    'Join the world of modest elegance',
-                    style: GoogleFonts.lato(
-                      fontSize: 16,
-                      color: Colors.black54,
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 40),
-
-                  // Glassmorphism Container
-                  GlassContainer(
-                    blur: 15,
-                    border: Border.fromBorderSide(
-                      BorderSide(color: Colors.black.withOpacity(0.05), width: 1),
-                    ),
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [
-                        Colors.black.withOpacity(0.02),
-                        Colors.black.withOpacity(0.05),
+              physics: const BouncingScrollPhysics(),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                child: Column(
+                  children: [
+                    const SizedBox(height: 5),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: IconButton(
+                        icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black, size: 20),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ).animate().fadeIn(duration: 500.ms).slideX(begin: -0.2, end: 0),
+                    
+                    const SizedBox(height: 10),
+                    
+                    Column(
+                      children: [
+                        Text(
+                          'CREATE NEW\nACCOUNT',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.playfairDisplay(
+                            fontSize: 24,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                            height: 1.1,
+                            letterSpacing: -0.5,
+                          ),
+                        ).animate()
+                         .fadeIn(duration: 800.ms)
+                         .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad),
+                        
+                        const SizedBox(height: 4),
+                        
+                        Text(
+                          'Join the world of modest elegance',
+                          style: GoogleFonts.lato(
+                            fontSize: 14,
+                            color: Colors.black45,
+                            letterSpacing: 0.2,
+                          ),
+                        ).animate()
+                         .fadeIn(delay: 200.ms, duration: 800.ms)
+                         .slideY(begin: 0.2, end: 0, curve: Curves.easeOutQuad),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(24),
-                    child: Padding(
-                      padding: const EdgeInsets.all(24),
-                      child: Column(
-                        children: [
-                          // Full Name Field
-                          _buildTextField(
-                            hint: 'Full Name',
-                            icon: FontAwesomeIcons.user,
-                          ),
-                          const SizedBox(height: 20),
-                          
-                          // Email Field
-                          _buildTextField(
-                            hint: 'Email Address',
-                            icon: FontAwesomeIcons.envelope,
-                          ),
-                          const SizedBox(height: 20),
-                          
-                          // Password Field
-                          _buildTextField(
-                            hint: 'Password',
-                            icon: FontAwesomeIcons.lock,
-                            isPassword: true,
-                            obscure: _obscurePassword,
-                            onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
-                          ),
-                          const SizedBox(height: 20),
-                          
-                          // Confirm Password Field
-                          _buildTextField(
-                            hint: 'Confirm Password',
-                            icon: FontAwesomeIcons.shieldHalved,
-                            isPassword: true,
-                            obscure: _obscureConfirmPassword,
-                            onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
-                          ),
-                          
-                          const SizedBox(height: 32),
-                          
-                          // Sign Up Button (Black)
-                          SizedBox(
-                            width: double.infinity,
-                            height: 56,
-                            child: ElevatedButton(
-                              onPressed: () {
-                                Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(builder: (_) => const HomePage()),
-                                );
-                              },
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.black,
-                                foregroundColor: Colors.white,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(30),
-                                ),
-                                elevation: 4,
-                                shadowColor: Colors.black45,
-                              ),
-                              child: Text(
-                                'SIGN UP',
-                                style: GoogleFonts.lato(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 16,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                            ),
-                          ),
+                    
+                    const SizedBox(height: 15),
+                    
+                    GlassContainer(
+                      blur: 35,
+                      opacity: 0.1,
+                      border: Border.fromBorderSide(
+                        BorderSide(color: Colors.white.withOpacity(0.6), width: 1.5),
+                      ),
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.white.withOpacity(0.15),
+                          Colors.white.withOpacity(0.08),
                         ],
                       ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-                  
-                  // Terms text
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
-                    child: Text(
-                      'By signing up you agree to our Terms of Service and Privacy Policy',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.lato(color: Colors.black54, fontSize: 12, height: 1.5),
-                    ),
-                  ),
-
-                  const SizedBox(height: 32),
-                  
-                  // Login Link
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        'Already have an account?',
-                        style: GoogleFonts.lato(color: Colors.black54),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.of(context).pushReplacement(
-                            MaterialPageRoute(builder: (_) => const LoginPage()),
-                          );
-                        },
-                        child: Text(
-                          'Log In',
-                          style: GoogleFonts.lato(
-                            color: Colors.black,
-                            fontWeight: FontWeight.bold,
-                            decoration: TextDecoration.underline,
-                          ),
+                      borderRadius: BorderRadius.circular(32),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildTextField(
+                              hint: 'Full Name',
+                              icon: FontAwesomeIcons.user,
+                              iconColor: const Color(0xFFFBBC05),
+                              controller: _nameController,
+                            ).animate()
+                             .fadeIn(delay: 400.ms, duration: 600.ms)
+                             .slideX(begin: -0.1, end: 0),
+                            
+                            const SizedBox(height: 10),
+                            
+                            _buildTextField(
+                              hint: 'Email Address',
+                              icon: FontAwesomeIcons.envelope,
+                              iconColor: const Color(0xFF4285F4),
+                              controller: _emailController,
+                            ).animate()
+                             .fadeIn(delay: 500.ms, duration: 600.ms)
+                             .slideX(begin: -0.1, end: 0),
+                            
+                            const SizedBox(height: 10),
+                            
+                            _buildTextField(
+                              hint: 'Password',
+                              icon: FontAwesomeIcons.lock,
+                              iconColor: const Color(0xFF34A853),
+                              controller: _passwordController,
+                              isPassword: true,
+                              obscure: _obscurePassword,
+                              onToggle: () => setState(() => _obscurePassword = !_obscurePassword),
+                            ).animate()
+                             .fadeIn(delay: 600.ms, duration: 600.ms)
+                             .slideX(begin: -0.1, end: 0),
+                            
+                            const SizedBox(height: 10),
+                            
+                            _buildTextField(
+                              hint: 'Confirm Password',
+                              icon: FontAwesomeIcons.shieldHalved,
+                              iconColor: const Color(0xFFEA4335),
+                              controller: _confirmPasswordController,
+                              isPassword: true,
+                              obscure: _obscureConfirmPassword,
+                              onToggle: () => setState(() => _obscureConfirmPassword = !_obscureConfirmPassword),
+                            ).animate()
+                             .fadeIn(delay: 700.ms, duration: 600.ms)
+                             .slideX(begin: -0.1, end: 0),
+                            
+                            const SizedBox(height: 15),
+                            
+                            SizedBox(
+                              width: double.infinity,
+                              height: 52,
+                              child: ElevatedButton(
+                                onPressed: _isLoading ? null : _handleSignUp,
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.black,
+                                  foregroundColor: Colors.white,
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(30),
+                                  ),
+                                  elevation: 8,
+                                  shadowColor: Colors.black.withOpacity(0.4),
+                                ),
+                                child: _isLoading
+                                  ? const SizedBox(
+                                      height: 20, 
+                                      width: 20, 
+                                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                                    )
+                                  : Text(
+                                      'SIGN UP',
+                                      style: GoogleFonts.lato(
+                                        fontWeight: FontWeight.w800,
+                                        fontSize: 15,
+                                        letterSpacing: 1.5,
+                                      ),
+                                    ),
+                              ),
+                            ).animate()
+                             .fadeIn(delay: 800.ms)
+                             .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0), curve: Curves.elasticOut, duration: 800.ms),
+                          ],
                         ),
                       ),
-                    ],
-                  ),
-                ],
+                    ).animate()
+                     .fadeIn(delay: 300.ms, duration: 1.seconds)
+                     .blur(begin: const Offset(10, 10), end: Offset.zero, duration: 1.seconds),
+                    
+                    const SizedBox(height: 15),
+                    
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 40),
+                      child: Text(
+                        'By signing up, you agree to our Terms and Conditions',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.lato(
+                          color: Colors.black45,
+                          fontSize: 10, 
+                          height: 1.4,
+                        ),
+                      ),
+                    ).animate().fadeIn(delay: 900.ms),
+                    
+                    const SizedBox(height: 10),
+                    
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          'Already a member?',
+                          style: GoogleFonts.lato(color: Colors.black54, fontSize: 14),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(context).pushReplacement(
+                              MaterialPageRoute(builder: (_) => const LoginPage()),
+                            );
+                          },
+                          child: Text(
+                            'Log In',
+                            style: GoogleFonts.lato(
+                              color: Colors.black,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ).animate().fadeIn(delay: 1.seconds),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
             ),
           ),
+
+          if (_isLoading)
+            Container(
+              color: Colors.black26,
+              child: const Center(
+                child: GlassContainer(
+                  blur: 10,
+                  opacity: 0.2,
+                  child: Padding(
+                    padding: EdgeInsets.all(24.0),
+                    child: CircularProgressIndicator(color: Colors.black),
+                  ),
+                ),
+              ),
+            ),
         ],
       ),
     );
@@ -234,23 +330,36 @@ class _SignUpPageState extends State<SignUpPage> {
   Widget _buildTextField({
     required String hint,
     required IconData icon,
+    required Color iconColor,
+    required TextEditingController controller,
     bool isPassword = false,
     bool? obscure,
     VoidCallback? onToggle,
   }) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.black.withOpacity(0.03),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.black.withOpacity(0.05)),
+        color: Colors.white.withOpacity(0.6),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.black.withOpacity(0.08)),
+        boxShadow: [
+          BoxShadow(
+            color: iconColor.withOpacity(0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: TextField(
+        controller: controller,
         obscureText: obscure ?? false,
-        style: const TextStyle(color: Colors.black),
+        style: const TextStyle(color: Colors.black, fontSize: 15),
         decoration: InputDecoration(
           hintText: hint,
           hintStyle: const TextStyle(color: Colors.black38, fontSize: 14),
-          prefixIcon: Icon(icon, color: Colors.black45, size: 18),
+          prefixIcon: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Icon(icon, color: iconColor, size: 18),
+          ),
           suffixIcon: isPassword
               ? IconButton(
                   icon: Icon(
@@ -262,7 +371,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 )
               : null,
           border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+          contentPadding: const EdgeInsets.symmetric(vertical: 18),
         ),
       ),
     );
